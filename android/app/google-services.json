@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "480451327287",
+    "project_id": "qbit-f228a",
+    "storage_bucket": "qbit-f228a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:480451327287:android:3f1b5a66927ea4cf6596b2",
+        "android_client_info": {
+          "package_name": "com.example.qbit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "480451327287-f8f0q90mafljk15v2drnf9qd5ea94u77.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3kgTHJSEdiwN2YoD-0d6Cp9CsjILtl7I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "480451327287-f8f0q90mafljk15v2drnf9qd5ea94u77.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
