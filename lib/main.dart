@@ -1,9 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:qbit/allConstants/app_constants.dart';
+import 'package:qbit/allProviders/auth_provider.dart';
+import 'package:qbit/allScreens/splash_page.dart';
 import 'package:qbit/firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 bool isWhite = false;
 
@@ -35,12 +41,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'qBit',
-      theme: ThemeData(
-        primaryColor: Colors.black,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthProvider>(
+            create: (_) => AuthProvider(
+              pref: this.prefs,
+              firebaseFirestore: this.firebaseFirestore,
+              googleSignIn: GoogleSignIn(),
+              firebaseAuth: FirebaseAuth.instance,
+            ),
+        ),
+      ],
+      child: MaterialApp(
+        title: AppConstants.appTitle,
+        theme: ThemeData(
+          primaryColor: Colors.black,
+        ),
+        home: SplashPage(),
+        debugShowCheckedModeBanner: false,
       ),
-      home: Scaffold(),
     );
   }
 }
