@@ -41,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
               "images/back.png"
             ),
           ),
-          SizedBox(height: 20.0),
+          const SizedBox(height: 20.0),
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: GestureDetector(
@@ -52,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
                 }
               },
               child: Image.asset(
-                "images/google_login",
+                "images/google_login.jpg",
               ),
             ),
           ),
