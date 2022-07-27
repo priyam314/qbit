@@ -52,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
                 }
               },
               child: Image.asset(
-                "images/google_login.png",
+                "images/google_login",
               ),
             ),
           ),
