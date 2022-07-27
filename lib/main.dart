@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qbit/allConstants/app_constants.dart';
 import 'package:qbit/allProviders/auth_provider.dart';
+import 'package:qbit/allProviders/setting_provider.dart';
 import 'package:qbit/allScreens/splash_page.dart';
 import 'package:qbit/firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,6 +51,13 @@ class MyApp extends StatelessWidget {
               googleSignIn: GoogleSignIn(),
               firebaseAuth: FirebaseAuth.instance,
             ),
+        ),
+        Provider<SettingProvider>(
+        create: (_) => SettingProvider(
+            prefs: this.prefs,
+            firebaseFirestore: this.firebaseFirestore,
+            firebaseStorage: this.firebaseStorage
+        ),
         ),
       ],
       child: MaterialApp(

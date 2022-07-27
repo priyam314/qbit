@@ -70,9 +70,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget buildPopupMenu(){
-    return PopupMenuButton<PopupChoices>(itemBuilder: (BuildContext context){
-      icon: const Icon(Icons.more_vert, color: Colors.redAccent);
-      onSelected: onItemMenuPress;
+    return PopupMenuButton<PopupChoices>(
+        onSelected: onItemMenuPress,
+        icon: const Icon(Icons.more_vert, color: Colors.redAccent),
+        itemBuilder: (BuildContext context){
       return choices.map((PopupChoices choice){
         return PopupMenuItem<PopupChoices>(
           value: choice,
