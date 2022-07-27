@@ -23,7 +23,7 @@ class SettingProvider{
   Future<bool> setPref(String key, String value) async {
     return await prefs.setString(key, value);
   }
-  UploadTask uploadTask(File image, String filename){
+  UploadTask uploadFile(File image, String filename){
     Reference reference  = firebaseStorage.ref().child(filename);
     UploadTask uploadTask = reference.putFile(image);
     return uploadTask;

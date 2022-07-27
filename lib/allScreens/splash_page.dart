@@ -19,7 +19,7 @@ class _SplashPageState extends State<SplashPage> {
     // TODO: implement initState
     super.initState();
     // show splash screen for 5 seconds, then redirect to login page or home page
-    Future.delayed(Duration(seconds: 10), (){
+    Future.delayed(Duration(seconds: 5), (){
       checkSignedIn();
     });
   }
