@@ -37,7 +37,6 @@ class SettingsPage extends StatelessWidget {
     );
   }
 }
-
 class SettingsPageState extends StatefulWidget {
   const SettingsPageState({Key? key}) : super(key: key);
 
