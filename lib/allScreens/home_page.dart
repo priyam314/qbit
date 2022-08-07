@@ -5,6 +5,7 @@ import 'package:qbit/allConstants/constants.dart';
 
 import '../allModels/popup_choices.dart';
 import '../allProviders/auth_provider.dart';
+import '../allProviders/home_provider.dart';
 import '../main.dart';
 import 'login_page.dart';
 import 'settings_page.dart';
@@ -27,7 +28,7 @@ class _HomePageState extends State<HomePage> {
   bool isLoading = false;
 
   late AuthProvider authProvider;
-  // late HomeProvider homeProvider;
+  late HomeProvider homeProvider;
   late String currentUserId;
 
   List<PopupChoices> choices = <PopupChoices>[
