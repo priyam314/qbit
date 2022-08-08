@@ -15,7 +15,7 @@ class SettingProvider{
     required this.prefs,
     required this.firebaseFirestore,
     required this.firebaseStorage
-});
+  });
 
   String? getPref(String key){
     return prefs.getString(key);
@@ -28,7 +28,6 @@ class SettingProvider{
     UploadTask uploadTask = reference.putFile(image);
     return uploadTask;
   }
-
   Future<void> updateDataFirestore(String collectionPath, String path, Map<String, String> dataNeedUpdate){
     return firebaseFirestore.collection(collectionPath).doc(path).update(dataNeedUpdate);
   }

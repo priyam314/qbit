@@ -4,7 +4,7 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -33,7 +33,7 @@ class SettingsPage extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: SettingsPageState(),
+      body: const SettingsPageState(),
     );
   }
 }
@@ -91,9 +91,9 @@ class _SettingsPageStateState extends State<SettingsPageState> {
 
   Future getImage() async {
     ImagePicker imagePicker = ImagePicker();
-    PickedFile? pickedFile = await imagePicker.getImage(source: ImageSource.gallery).catchError((err){
+    PickedFile? pickedFile = (await imagePicker.pickImage(source: ImageSource.gallery).catchError((err){
       Fluttertoast.showToast(msg: err.toString());
-    });
+    })) as PickedFile?;
     File? image;
     if (pickedFile!=null){
       image = File(pickedFile.path);
@@ -112,14 +112,14 @@ class _SettingsPageStateState extends State<SettingsPageState> {
     try{
       TaskSnapshot snapshot = await uploadTask;
       photoUrl = await snapshot.ref.getDownloadURL();
-      UserChat updateinfo = UserChat(
+      UserChat updateInfo = UserChat(
         id: id,
         photoUrl: photoUrl,
         nickName: nickname,
         aboutMe: aboutMe,
         phoneNumber: phoneNumber,
       );
-      settingProvider.updateDataFirestore(FirestoreConstants.pathUserCollection, id, updateinfo.toJson())
+      settingProvider.updateDataFirestore(FirestoreConstants.pathUserCollection, id, updateInfo.toJson())
       .then((data) async {
         await settingProvider.setPref(FirestoreConstants.photoUrl, photoUrl);
         setState(() {
@@ -147,7 +147,7 @@ class _SettingsPageStateState extends State<SettingsPageState> {
         phoneNumber = dialCodeDigits + _controller.text.toString();
       }
     });
-    UserChat updateinfo = UserChat(
+    UserChat updateInfo = UserChat(
       id: id,
       photoUrl: photoUrl,
       nickName: nickname,
@@ -155,7 +155,7 @@ class _SettingsPageStateState extends State<SettingsPageState> {
       phoneNumber: phoneNumber,
     );
     settingProvider.updateDataFirestore(
-        FirestoreConstants.pathUserCollection, id, updateinfo.toJson())
+        FirestoreConstants.pathUserCollection, id, updateInfo.toJson())
         .then((data) async {
       await settingProvider.setPref(FirestoreConstants.nickname, nickname);
       await settingProvider.setPref(FirestoreConstants.aboutMe, aboutMe);
@@ -205,7 +205,7 @@ class _SettingsPageStateState extends State<SettingsPageState> {
                       },
                       loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress){
                         if (loadingProgress==null) return child;
-                        return Container(
+                        return SizedBox(
                           width: 90,
                           height: 90,
                           child: Center(
@@ -224,8 +224,7 @@ class _SettingsPageStateState extends State<SettingsPageState> {
                     Icons.account_circle,
                     size: 90,
                     color: ColorConstants.greyColor,
-                  )
-                      :ClipRRect(
+                  ) :ClipRRect(
                     borderRadius: BorderRadius.circular(45),
                     child: Image.file(
                       avatarImageFile!,
@@ -240,7 +239,8 @@ class _SettingsPageStateState extends State<SettingsPageState> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Container(
-                    child: Text(
+                    margin: const EdgeInsets.only(left: 10, bottom: 5, top: 10),
+                    child: const Text(
                       'Name',
                       style: TextStyle(
                         fontStyle: FontStyle.italic,
@@ -248,15 +248,14 @@ class _SettingsPageStateState extends State<SettingsPageState> {
                         color: ColorConstants.primaryColor,
                       ),
                     ),
-                    margin: EdgeInsets.only(left: 10, bottom: 5, top: 10),
                   ),
                   Container(
-                    margin: EdgeInsets.only(left: 10, right: 30),
+                    margin: const EdgeInsets.only(left: 10, right: 30),
                     child: Theme(
                       data: Theme.of(context).copyWith(primaryColor: ColorConstants.primaryColor),
                       child: TextField(
-                        style: TextStyle(color: Colors.grey),
-                        decoration: InputDecoration(
+                        style: const TextStyle(color: Colors.grey),
+                        decoration: const InputDecoration(
                           enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: ColorConstants.greyColor2),
                           ),
@@ -276,7 +275,8 @@ class _SettingsPageStateState extends State<SettingsPageState> {
                     ),
                   ),
                   Container(
-                    child: Text(
+                    margin: const EdgeInsets.only(left: 10, top: 30, bottom: 5),
+                    child: const Text(
                       'About Me',
                       style: TextStyle(
                         fontStyle: FontStyle.italic,
@@ -284,15 +284,14 @@ class _SettingsPageStateState extends State<SettingsPageState> {
                         color: ColorConstants.primaryColor,
                       ),
                     ),
-                    margin: EdgeInsets.only(left: 10, top: 30, bottom: 5),
                   ),
                   Container(
-                    margin: EdgeInsets.only(left: 10, right: 30),
+                    margin: const EdgeInsets.only(left: 10, right: 30),
                     child: Theme(
                       data: Theme.of(context).copyWith(primaryColor: ColorConstants.primaryColor),
                       child: TextField(
-                        style: TextStyle(color: Colors.grey),
-                        decoration: InputDecoration(
+                        style: const TextStyle(color: Colors.grey),
+                        decoration: const InputDecoration(
                           enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: ColorConstants.greyColor2),
                           ),
@@ -312,7 +311,8 @@ class _SettingsPageStateState extends State<SettingsPageState> {
                     ),
                   ),
                   Container(
-                    child: Text(
+                    margin: const EdgeInsets.only(left: 10, top: 30, bottom: 5),
+                    child: const Text(
                       'Phone Number',
                       style: TextStyle(
                         fontStyle: FontStyle.italic,
@@ -320,25 +320,24 @@ class _SettingsPageStateState extends State<SettingsPageState> {
                         color: ColorConstants.primaryColor,
                       ),
                     ),
-                    margin: EdgeInsets.only(left: 10, top: 30, bottom: 5),
                   ),
                   Container(
-                    margin: EdgeInsets.only(left: 10, right: 30),
+                    margin: const EdgeInsets.only(left: 10, right: 30),
                     child: Theme(
                       data: Theme.of(context).copyWith(primaryColor: ColorConstants.primaryColor),
                       child: TextField(
-                        style: TextStyle(color: Colors.grey),
+                        style: const TextStyle(color: Colors.grey),
                         enabled: false,
                         decoration: InputDecoration(
                           hintText: phoneNumber,
-                          contentPadding: EdgeInsets.all(5),
-                          hintStyle: TextStyle(color: Colors.grey),
+                          contentPadding: const EdgeInsets.all(5),
+                          hintStyle: const TextStyle(color: Colors.grey),
                         ),
                       ),
                     ),
                   ),
                   Container(
-                    margin: EdgeInsets.only(left: 10, top: 30, bottom: 5),
+                    margin: const EdgeInsets.only(left: 10, top: 30, bottom: 5),
                     child: SizedBox(
                       width: 400,
                       height: 60,
@@ -351,26 +350,26 @@ class _SettingsPageStateState extends State<SettingsPageState> {
                         initialSelection: "IT",
                         showCountryOnly: false,
                         showOnlyCountryWhenClosed: false,
-                        favorite: ["+1", "US", "+91", "IND"],
+                        favorite: const ["+1", "US", "+91", "IND"],
                       ),
                     ),
                   ),
                   Container(
-                    margin: EdgeInsets.only(left: 30, right: 30),
+                    margin: const EdgeInsets.only(left: 30, right: 30),
                     child: TextField(
-                      style: TextStyle(color: Colors.grey),
+                      style: const TextStyle(color: Colors.grey),
                       decoration: InputDecoration(
-                        enabledBorder: UnderlineInputBorder(
+                        enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(color: ColorConstants.greyColor),
                         ),
-                        focusedBorder: UnderlineInputBorder(
+                        focusedBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(color: ColorConstants.primaryColor),
                         ),
                         hintText: "Phone Number",
-                        hintStyle: TextStyle(color: Colors.grey),
+                        hintStyle: const TextStyle(color: Colors.grey),
                         prefix: Padding(
-                          padding: EdgeInsets.all(4),
-                          child: Text(dialCodeDigits, style: TextStyle(color: Colors.grey),),
+                          padding: const EdgeInsets.all(4),
+                          child: Text(dialCodeDigits, style: const TextStyle(color: Colors.grey),),
                         ),
                       ),
                       maxLength: 12,
@@ -381,25 +380,25 @@ class _SettingsPageStateState extends State<SettingsPageState> {
                 ],
               ),
               Container(
-                margin: EdgeInsets.only(top: 50, bottom: 50),
+                margin: const EdgeInsets.only(top: 50, bottom: 50),
                 child: TextButton(
                   onPressed: handleUpdateData,
-                  child: Text(
-                    'update me',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all<Color>(ColorConstants.primaryColor),
                     padding: MaterialStateProperty.all<EdgeInsets>(
-                      EdgeInsets.fromLTRB(30,10,30,10),
+                      const EdgeInsets.fromLTRB(30,10,30,10),
                     ),
+                  ),
+                  child: const Text(
+                    'update me',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),
               )
             ],
           ),
         ),
-        Positioned(child: isLoading ? LoadingView(): const SizedBox.shrink()),
+        Positioned(child: isLoading ? const LoadingView(): const SizedBox.shrink()),
       ],
     );
   }

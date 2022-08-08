@@ -40,9 +40,8 @@ class AuthProvider extends ChangeNotifier{
     bool isLoggedIn = await googleSignIn.isSignedIn();
     if (isLoggedIn && pref.getString(FirestoreConstants.id)?.isNotEmpty == true){
       return true;
-    }else{
-      return false;
     }
+    return false;
   }
   Future<bool> handleSignIn() async{
     _status = Status.authenticating;
@@ -64,17 +63,14 @@ class AuthProvider extends ChangeNotifier{
             .where(FirestoreConstants.id, isEqualTo: firebaseUser.uid)
             .get();
         final List<DocumentSnapshot> document = result.docs;
-        if (document.length == 0) {
+        if (document.isEmpty) {
           firebaseFirestore.collection(FirestoreConstants.pathUserCollection)
               .doc(firebaseUser.uid)
               .set({
             FirestoreConstants.nickname: firebaseUser.displayName,
             FirestoreConstants.photoUrl: firebaseUser.displayName,
             FirestoreConstants.id: firebaseUser.uid,
-            'createdAt': DateTime
-                .now()
-                .millisecondsSinceEpoch
-                .toString(),
+            'createdAt': DateTime.now().millisecondsSinceEpoch.toString(),
             FirestoreConstants.chattingWith: null,
           });
           User? currentUser = firebaseUser;

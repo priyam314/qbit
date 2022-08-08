@@ -6,11 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qbit/allConstants/app_constants.dart';
 import 'package:qbit/allProviders/auth_provider.dart';
+import 'package:qbit/allProviders/home_provider.dart';
 import 'package:qbit/allProviders/setting_provider.dart';
 import 'package:qbit/allScreens/splash_page.dart';
 import 'package:qbit/firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
+import 'allProviders/chat_provider.dart';
 
 bool isWhite = false;
 
@@ -38,7 +41,7 @@ class MyApp extends StatelessWidget {
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   final FirebaseStorage firebaseStorage = FirebaseStorage.instance;
 
-  MyApp({required this.prefs});
+  MyApp({Key? key, required this.prefs}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -46,18 +49,30 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<AuthProvider>(
             create: (_) => AuthProvider(
-              pref: this.prefs,
-              firebaseFirestore: this.firebaseFirestore,
+              pref: prefs,
+              firebaseFirestore: firebaseFirestore,
               googleSignIn: GoogleSignIn(),
               firebaseAuth: FirebaseAuth.instance,
             ),
         ),
         Provider<SettingProvider>(
-        create: (_) => SettingProvider(
-            prefs: this.prefs,
-            firebaseFirestore: this.firebaseFirestore,
-            firebaseStorage: this.firebaseStorage
+          create: (_) => SettingProvider(
+            prefs: prefs,
+            firebaseFirestore: firebaseFirestore,
+            firebaseStorage: firebaseStorage
+          ),
         ),
+        Provider<HomeProvider>(
+          create : (_) => HomeProvider(
+              firebaseFirestore: firebaseFirestore
+          ),
+        ),
+        Provider<ChatProvider>(
+          create : (_) => ChatProvider(
+              firebaseFirestore: firebaseFirestore,
+            prefs: prefs,
+            firebaseStorage: firebaseStorage
+          ),
         ),
       ],
       child: MaterialApp(
@@ -65,7 +80,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primaryColor: Colors.black,
         ),
-        home: SplashPage(),
+        home: const SplashPage(),
         debugShowCheckedModeBanner: false,
       ),
     );

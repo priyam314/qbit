@@ -1,5 +1,6 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:qbit/allConstants/constants.dart';
 
 class UserChat{
@@ -33,16 +34,24 @@ class UserChat{
     String phoneNumber = "";
     try{
       aboutMe = doc.get(FirestoreConstants.aboutMe);
-    } catch (e) {}
+    } catch (e) {
+      log(e.toString(), name: 'user_chat');
+    }
     try{
       photoUrl = doc.get(FirestoreConstants.photoUrl);
-    } catch (e) {}
+    } catch (e) {
+      log(e.toString(), name: 'user_chat');
+    }
     try{
       nickname = doc.get(FirestoreConstants.nickname);
-    } catch (e) {}
+    } catch (e) {
+      log(e.toString(), name: 'user_chat');
+    }
     try{
       phoneNumber = doc.get(FirestoreConstants.phoneNumber);
-    } catch (e) {}
+    } catch (e) {
+      log(e.toString(), name: 'user_chat');
+    }
     return UserChat(
       id: doc.id,
       phoneNumber: phoneNumber,

@@ -46,9 +46,10 @@ class _LoginPageState extends State<LoginPage> {
             padding: const EdgeInsets.all(20.0),
             child: GestureDetector(
               onTap: () async{
+                final navigator = Navigator.of(context);
                 bool isSuccess = await authProvider.handleSignIn();
                 if(isSuccess){
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>HomePage()));
+                  navigator.pushReplacement(MaterialPageRoute(builder: (context)=>const HomePage()));
                 }
               },
               child: Image.asset(
@@ -57,7 +58,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
           Positioned(
-            child: authProvider.status == Status.authenticating ? LoadingView():SizedBox.shrink(),
+            child: authProvider.status == Status.authenticating ? const LoadingView():const SizedBox.shrink(),
           ),
         ],
       ),

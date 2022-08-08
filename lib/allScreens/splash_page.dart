@@ -16,22 +16,23 @@ class _SplashPageState extends State<SplashPage> {
   @override
 
     void initState() {
-    // TODO: implement initState
     super.initState();
     // show splash screen for 5 seconds, then redirect to login page or home page
-    Future.delayed(Duration(seconds: 5), (){
+    Future.delayed(const Duration(seconds: 2), (){
       checkSignedIn();
     });
   }
   void checkSignedIn() async {
     AuthProvider authProvider = context.read<AuthProvider>();
+    final navigator  = Navigator.of(context);
     bool isLoggedIn = await authProvider.isLoggedIn();
     if (isLoggedIn){
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+      navigator.pushReplacement(MaterialPageRoute(builder: (context) => const HomePage()));
       return;
     }
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+    navigator.pushReplacement(MaterialPageRoute(builder: (context) => const LoginPage()));
   }
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
@@ -43,20 +44,20 @@ class _SplashPageState extends State<SplashPage> {
               width: 300,
               height: 300,
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
-            Text(
+            const Text(
               "World's Coolest Chat App",
               style: TextStyle(
                 color: ColorConstants.themeColor,
                 fontSize: 20.9,
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
-            Container(
+            const SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
