@@ -10,6 +10,7 @@ import 'package:qbit/allProviders/home_provider.dart';
 import 'package:qbit/allProviders/setting_provider.dart';
 import 'package:qbit/allScreens/splash_page.dart';
 import 'package:qbit/firebase_options.dart';
+import 'package:qbit/utilities/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -37,6 +38,7 @@ void main() async {
   // can still retrieve the value as it was. It stores key-value pair. Useful for
   // storing passwords, tokens, complex relational data.
   SharedPreferences prefs = await SharedPreferences.getInstance();
+  logInfo('yo');
   runApp(MyApp(prefs: prefs));
 }
 class MyApp extends StatelessWidget {

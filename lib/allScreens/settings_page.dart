@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:qbit/allConstants/constants.dart';
 import 'package:qbit/allWidgets/loading_view.dart';
+import 'package:qbit/utilities/logger.dart';
 
 import '../allConstants/app_constants.dart';
 import '../allModels/user_chat.dart';
@@ -50,6 +51,11 @@ class _SettingsPageStateState extends State<SettingsPageState> {
   TextEditingController? controllerAboutMe;
 
   String dialCodeDigits = "+00";
+
+  // whenever the user modifies a text field with asociated TextEditingController
+  // the text field updates value and the controller notifies its listeners. Listeners
+  // can rea the text and selection properties to learn what the user has typed
+  // or how th selection has been updated
   final TextEditingController _controller = TextEditingController();
 
   String id = '';
@@ -62,9 +68,28 @@ class _SettingsPageStateState extends State<SettingsPageState> {
   File? avatarImageFile;
   late SettingProvider settingProvider;
 
+  // Focusnode works like a focus to some field, e.g textField. It can be used when
+  // you got some value from API, now you want to disable the textfield or enable
+  // any widget, not only textfield
   final FocusNode focusNodeNickname = FocusNode();
   final FocusNode focusNodeAboutMe = FocusNode();
 
+  /*
+  Provider Accessing and updating model
+  1. watch: use this when you want to access the model and you want to rebuild the
+            widget whenever that model is changed
+  2. read: use this when you want to access the model, but you do not want to rebuild
+           the widget when that model changes.
+  3. select: use this when you want to access a selected part of the model, and
+             want the widget to rebuild, ONLY WHEN that selected part of model  changes.
+
+  Quick Notes
+  1. watch and select  can be used only in build method of widgets
+  2. read can not be used in build methods, it's usually used in callback functions
+      like onPress of a button
+  3. when notifyListeners() is called in a model, every build method that has accessed
+      that model using watch and select will be called.
+  */
   @override
   void initState() {
     super.initState();
@@ -81,6 +106,7 @@ class _SettingsPageStateState extends State<SettingsPageState> {
       phoneNumber = settingProvider.getPref(FirestoreConstants.phoneNumber)??"";
     });
 
+    // setting default values
     controllerNickname = TextEditingController(
       text: nickname,
     );
@@ -90,13 +116,15 @@ class _SettingsPageStateState extends State<SettingsPageState> {
   }
 
   Future getImage() async {
-    ImagePicker imagePicker = ImagePicker();
-    PickedFile? pickedFile = (await imagePicker.pickImage(source: ImageSource.gallery).catchError((err){
+    final ImagePicker imagePicker = ImagePicker();
+    final XFile? pickedFile = await imagePicker.pickImage(source: ImageSource.gallery).catchError((err){
       Fluttertoast.showToast(msg: err.toString());
-    })) as PickedFile?;
+    });
     File? image;
     if (pickedFile!=null){
       image = File(pickedFile.path);
+    }else{
+      logError('file null');
     }
     if (image != null){
       setState((){
