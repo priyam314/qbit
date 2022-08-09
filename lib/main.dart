@@ -32,10 +32,13 @@ bool isWhite = false;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // SharedPreferences is what android and ios apps use to store data in an allocated
+  // space. This data exists even after app is shutdown and startsup again; we
+  // can still retrieve the value as it was. It stores key-value pair. Useful for
+  // storing passwords, tokens, complex relational data.
   SharedPreferences prefs = await SharedPreferences.getInstance();
   runApp(MyApp(prefs: prefs));
 }
-
 class MyApp extends StatelessWidget {
   final SharedPreferences prefs;
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
