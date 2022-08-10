@@ -15,9 +15,9 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> {
   @override
 
-    void initState() {
+  void initState() {
     super.initState();
-    // show splash screen for 5 seconds, then redirect to login page or home page
+    // show splash screen for 2 seconds, then redirect to login page or home page
     Future.delayed(const Duration(seconds: 2), (){
       checkSignedIn();
     });

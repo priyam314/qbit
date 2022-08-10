@@ -38,7 +38,6 @@ void main() async {
   // can still retrieve the value as it was. It stores key-value pair. Useful for
   // storing passwords, tokens, complex relational data.
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  logInfo('yo');
   runApp(MyApp(prefs: prefs));
 }
 class MyApp extends StatelessWidget {

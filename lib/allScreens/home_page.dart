@@ -21,7 +21,6 @@ import 'settings_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -39,7 +38,12 @@ class _HomePageState extends State<HomePage> {
   late AuthProvider authProvider;
   late HomeProvider homeProvider;
   late String currentUserId;
+
   Debouncer searchDebouncer = Debouncer(milliseconds: 300);
+  // A StreamController gives you a new stream and a way to add events to the
+  // stream at any point, and from anywhere. The stream has all the logic necessary
+  // to handle listeners and pausing. You return the stream and keep the controller
+  // to yourself.
   StreamController<bool> btnClearController = StreamController<bool>();
   TextEditingController searchBarTec = TextEditingController();
 
@@ -64,7 +68,7 @@ class _HomePageState extends State<HomePage> {
     openDialog();
     return Future.value(false);
   }
-  Future<void> openDialog() async {
+  Future<void> openDialog() async{
     switch(await showDialog(
         context: context,
         builder: (BuildContext context){
@@ -230,48 +234,30 @@ class _HomePageState extends State<HomePage> {
           buildPopupMenu(),
         ],
       ),
-      body: WillPopScope(
-        onWillPop: onBackPress,
-        child: Stack(
-          children: <Widget>[
-            Column(
-              children: [
-                buildSearchBar(),
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: homeProvider.getStreamFirestore(
-                    FirestoreConstants.pathUserCollection, limit, _textSearch),
-                    builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
-                      if(snapshot.hasData){
-                        if(snapshot.data!.docs.isNotEmpty){
-                          return ListView.builder(
-                            itemBuilder: (context, index) => buildItem(context, snapshot.data!.docs[index]),
-                            itemCount: snapshot.data!.docs.length,
-                            controller: listScrollController,
-                          );
-                        }else{
-                          return const Center(child: Text('No User Found!', style: TextStyle(color: Colors.grey)));
-                        }
-                      }else{
-                        return const Center(
-                          child: CircularProgressIndicator(
-                            color: Colors.grey,
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            Positioned(
-                child: isLoading ? const LoadingView() : const SizedBox.shrink(),
-            ),
-          ]
-        ),
+      body: buildWillPopScope(),
+    );
+  }
+
+  WillPopScope buildWillPopScope() {
+    return WillPopScope(
+      onWillPop: onBackPress,
+      child: Stack(
+        children: <Widget>[
+          Column(
+            children: [
+              buildSearchBar(),
+              BuildEntity(homeProvider: homeProvider, listScrollController: listScrollController)
+                  .over(_textSearch, limit, currentUserId),
+            ],
+          ),
+          Positioned(
+              child: isLoading ? const LoadingView() : const SizedBox.shrink(),
+          ),
+        ]
       ),
     );
   }
+
   Widget buildSearchBar(){
     return Container(
       height: 40,
@@ -339,106 +325,199 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget buildItem(BuildContext context, DocumentSnapshot? document){
-    if (document != null){
-      UserChat userChat = UserChat.fromDocument(document);
-      if (userChat.id == currentUserId){
-        return const SizedBox.shrink();
-      }else{
-        return Container(
-          margin: const EdgeInsets.only(bottom: 10, left: 5, right: 5),
-          child: TextButton(
-            onPressed: () {
-              if (Utilities.isKeyboardShowing()){
-                Utilities.closeKeyboard(context);
-              }
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ChatPage(
-                peerId: userChat.id,
-                peerAvatar: userChat.photoUrl,
-                peerNickname: userChat.nickName
-              )));
-            },
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all<Color>(Colors.grey.withOpacity(0.2)),
-              shape: MaterialStateProperty.all<OutlinedBorder>(
-                const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                ),
-              ),
-            ),
-            child: Row(
-              children: <Widget>[
-                Material(
-                  borderRadius: const BorderRadius.all(Radius.circular(25)),
-                  clipBehavior: Clip.hardEdge,
-                  child: userChat.photoUrl.isNotEmpty
-                      ? Image.network(
-                          userChat.photoUrl,
-                          fit: BoxFit.cover,
-                          width: 50,
-                          height: 50,
-                          loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress){
-                                  if (loadingProgress==null) return child;
-                                  return SizedBox(
-                                    width: 50,
-                                    height: 50,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.grey,
-                                      value: loadingProgress.expectedTotalBytes != null &&
-                                      loadingProgress.expectedTotalBytes != null
-                                          ? loadingProgress.cumulativeBytesLoaded/loadingProgress.expectedTotalBytes!
-                                          : null,
-                                    ),
-                                 );
-                          },
-                          errorBuilder: (context, object, stackTrace){
-                            return const Icon(
-                              Icons.account_circle,
-                              size: 50,
-                              color: ColorConstants.greyColor,
-                            );
-                          },
-                        )
-                      : const Icon(
-                          Icons.account_circle,
-                          size: 50,
-                          color: ColorConstants.greyColor,
-                        ),
-                ),
-                Flexible(
-                  child: Container(
-                    margin: const EdgeInsets.only(left: 20),
-                    child: Column(
-                      children: <Widget>[
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          margin: const EdgeInsets.fromLTRB(10, 0, 0, 5),
-                          child: Text(
-                            userChat.nickName,
-                            maxLines: 1,
-                            style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold, fontSize: 10),
-                          ),
-                        ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          margin: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-                          child: Text(
-                            userChat.nickName,
-                            maxLines: 1,
-                            style: TextStyle(color: Colors.grey[700],),
-                          ),
-                        ),
-                      ],
-                    ),
+
+}
+Widget buildItem(BuildContext context, DocumentSnapshot? document, String? textSearch){
+  if (document == null) {
+    return const SizedBox.shrink();
+  }
+  UserChat userChat = UserChat.fromDocument(document);
+  // if (userChat.id == currentUserId){
+  //   return const SizedBox.shrink();
+  // }
+  if (textSearch == null){
+
+  }
+  return Container(
+    margin: const EdgeInsets.only(bottom: 10, left: 5, right: 5),
+    child: TextButton(
+      onPressed: () {
+        if (Utilities.isKeyboardShowing()){
+          Utilities.closeKeyboard(context);
+        }
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ChatPage(
+            peerId: userChat.id,
+            peerAvatar: userChat.photoUrl,
+            peerNickname: userChat.nickName
+        )));
+      },
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.grey.withOpacity(0.2)),
+        shape: MaterialStateProperty.all<OutlinedBorder>(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+        ),
+      ),
+      child: Row(
+        children: <Widget>[
+          Material(
+            borderRadius: const BorderRadius.all(Radius.circular(25)),
+            clipBehavior: Clip.hardEdge,
+            child: userChat.photoUrl.isNotEmpty
+                ? Image.network(
+              userChat.photoUrl,
+              fit: BoxFit.cover,
+              width: 50,
+              height: 50,
+              loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress){
+                if (loadingProgress==null) return child;
+                return SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: CircularProgressIndicator(
+                    color: Colors.grey,
+                    value: loadingProgress.expectedTotalBytes != null &&
+                        loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded/loadingProgress.expectedTotalBytes!
+                        : null,
                   ),
-                ),
-              ],
+                );
+              },
+              errorBuilder: (context, object, stackTrace){
+                return const Icon(
+                  Icons.account_circle,
+                  size: 50,
+                  color: ColorConstants.greyColor,
+                );
+              },
+            )
+                : const Icon(
+              Icons.account_circle,
+              size: 50,
+              color: ColorConstants.greyColor,
             ),
           ),
-        );
-      }
-    }else{
-      return const SizedBox.shrink();
+          Flexible(
+            child: Container(
+              margin: const EdgeInsets.only(left: 20),
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    margin: const EdgeInsets.fromLTRB(10, 0, 0, 5),
+                    child: Text(
+                      userChat.nickName,
+                      maxLines: 1,
+                      style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold, fontSize: 10),
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    margin: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                    child: Text(
+                      userChat.aboutMe,
+                      maxLines: 1,
+                      style: TextStyle(color: Colors.grey[700],),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class BuildEntity{
+  final HomeProvider homeProvider;
+  final ScrollController listScrollController;
+
+  BuildEntity({Key? key, required this.homeProvider, required this.listScrollController});
+
+  Widget over(String textSearch, int limit, String currentUserId){
+    BuildEntityTruth buildEntityTruth = BuildEntityTruth(homeProvider: homeProvider, listScrollController: listScrollController);
+    BuildEntityNull buildEntityNull = BuildEntityNull(homeProvider: homeProvider, listScrollController: listScrollController);
+    if (textSearch.trim() != ""){
+      return buildEntityTruth.build(limit, textSearch);
     }
+    return buildEntityNull.build(currentUserId);
   }
 }
+class BuildEntityNull{
+  final HomeProvider homeProvider;
+  final ScrollController listScrollController;
+  BuildEntityNull({Key? key, required this.homeProvider, required this.listScrollController});
+
+  Widget build(String currentUserId) {
+    final List<String> friendsList =  homeProvider.getFriends(currentUserId);
+    print('currentUserId: $currentUserId');
+    print('friendsList: $friendsList');
+    print('friendList2: $friendsList');
+    return const Center(child: Text("print hua"));
+
+    // return Expanded(
+    //   child: StreamBuilder<QuerySnapshot>(
+    //     stream: homeProvider.getStreamFirestore(
+    //         FirestoreConstants.pathUserCollection, limit, _textSearch),
+    //     builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+    //       if(snapshot.hasData){
+    //         if(snapshot.data!.docs.isNotEmpty){
+    //           return ListView.builder(
+    //             itemBuilder: (context, index) => buildItem(context, snapshot.data!.docs[index], _textSearch),
+    //             itemCount: snapshot.data!.docs.length,
+    //             controller: listScrollController,
+    //           );
+    //         }else{
+    //           return const Center(child: Text('No User Found!', style: TextStyle(color: Colors.grey)));
+    //         }
+    //       }else{
+    //         return const Center(
+    //           child: CircularProgressIndicator(
+    //             color: Colors.grey,
+    //           ),
+    //         );
+    //       }
+    //     },
+    //   ),
+    // );
+  }
+}
+
+class BuildEntityTruth{
+  final HomeProvider homeProvider;
+  final ScrollController listScrollController;
+  BuildEntityTruth({Key? key, required this.homeProvider, required this.listScrollController});
+
+  Widget build(int limit, String textSearch){
+    return Expanded(
+      child: StreamBuilder<QuerySnapshot>(
+        stream: homeProvider.getStreamFirestore(
+            FirestoreConstants.pathUserCollection, limit, textSearch),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+          if(snapshot.hasData){
+            if(snapshot.data!.docs.isNotEmpty){
+              return ListView.builder(
+                itemBuilder: (context, index) => buildItem(context, snapshot.data!.docs[index], textSearch),
+                itemCount: snapshot.data!.docs.length,
+                controller: listScrollController,
+              );
+            }else{
+              return const Center(child: Text('No User Found!', style: TextStyle(color: Colors.grey)));
+            }
+          }else{
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Colors.grey,
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+

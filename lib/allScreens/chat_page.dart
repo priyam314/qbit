@@ -10,7 +10,10 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:qbit/allConstants/constants.dart';
 import 'package:qbit/allProviders/auth_provider.dart';
+import 'package:qbit/allProviders/home_provider.dart';
 import 'package:qbit/allProviders/setting_provider.dart';
+import 'package:qbit/allScreens/full_photo_state.dart';
+import 'package:qbit/allScreens/home_page.dart';
 import 'package:qbit/allScreens/login_page.dart';
 import 'package:qbit/allWidgets/loading_view.dart';
 import 'package:qbit/utilities/logger.dart';
@@ -58,12 +61,14 @@ class ChatPageState extends State<ChatPage> {
 
   late ChatProvider chatProvider;
   late AuthProvider authProvider;
+  late HomeProvider homeProvider;
 
   @override
   void initState() {
     super.initState();
     chatProvider = context.read<ChatProvider>();
     authProvider = context.read<AuthProvider>();
+    homeProvider= context.read<HomeProvider>();
     focusNode.addListener(onFocusChange);
     listScrollController.addListener(_scrollListener);
     readLocal();
@@ -122,7 +127,6 @@ class ChatPageState extends State<ChatPage> {
       uploadFile();
     }
   }
-
   void getSticker(){
     focusNode.unfocus();
     setState((){
@@ -150,6 +154,7 @@ class ChatPageState extends State<ChatPage> {
     if (content.trim().isNotEmpty){
       textEditingController.clear();
       chatProvider.sendMessage(content, type, groupChatId, currentUserId, peerId!);
+      homeProvider.addFriends(currentUserId, peerId!);
       listScrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
     }else{
       Fluttertoast.showToast(msg: 'Nothing To Send', backgroundColor: ColorConstants.greyColor);
@@ -439,7 +444,7 @@ class ChatPageState extends State<ChatPage> {
                     margin: EdgeInsets.only(bottom: isLastMessageRight(index) ? 20: 10, right: 10),
                     child: OutlinedButton(
                       onPressed: (){
-
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => FullPhotoPage(url: messageChat.content)));
                       },
                       style: ButtonStyle(
                         padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.all(0)),
@@ -562,7 +567,7 @@ class ChatPageState extends State<ChatPage> {
                   margin: EdgeInsets.only(bottom: isLastMessageRight(index) ? 20: 10, right: 10),
                   child: TextButton(
                     onPressed: (){
-
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => FullPhotoPage(url: messageChat.content)));
                     },
                     style: ButtonStyle(
                       padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.all(0)),

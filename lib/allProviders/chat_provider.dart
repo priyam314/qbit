@@ -30,6 +30,7 @@ class ChatProvider{
   Future<void> updateDataFirestore(String collectionPath, String docPath, Map<String, dynamic> dataNeedUpdate)async {
     return await firebaseFirestore.collection(collectionPath).doc(docPath).update(dataNeedUpdate);
   }
+
   Stream<QuerySnapshot> getChatStream(String groupChatId, int limit){
     return firebaseFirestore
         .collection(FirestoreConstants.pathMessageCollection)

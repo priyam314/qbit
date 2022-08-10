@@ -100,6 +100,7 @@ class AuthProvider extends ChangeNotifier{
                 FirestoreConstants.id: firebaseUser.uid,
                 'createdAt': DateTime.now().millisecondsSinceEpoch.toString(),
                 FirestoreConstants.chattingWith: null,
+                FirestoreConstants.friends: <String>[],
       });
       User? currentUser = firebaseUser;
       // setting the values of credentials in persistent storage also
@@ -107,6 +108,7 @@ class AuthProvider extends ChangeNotifier{
       await pref.setString(FirestoreConstants.nickname, currentUser.displayName ?? "");
       await pref.setString(FirestoreConstants.photoUrl, currentUser.photoURL ?? "");
       await pref.setString(FirestoreConstants.phoneNumber, currentUser.phoneNumber ?? "");
+      // await pref.setString(FirestoreConstants.friends, <String>[]);
     }else{
       DocumentSnapshot documentSnapshot = document[0];
       UserChat userChat = UserChat.fromDocument(documentSnapshot);
