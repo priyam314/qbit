@@ -156,9 +156,9 @@ class ChatPageState extends State<ChatPage> {
     if (content.trim().isNotEmpty){
       textEditingController.clear();
       chatProvider.sendMessage(content, type, groupChatId, currentUserId, peerId!);
+      listScrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       homeProvider.addFriends(currentUserId, peerId!);
       homeProvider.addToFriend(currentUserId, peerId!);
-      listScrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
     }else{
       Fluttertoast.showToast(msg: 'Nothing To Send', backgroundColor: ColorConstants.greyColor);
     }
@@ -394,27 +394,43 @@ class ChatPageState extends State<ChatPage> {
     if(document == null) {
       return const SizedBox.shrink();
     }
+    const Radius r = Radius.circular(25.0);
     MessageChat messageChat = MessageChat.fromDocument(document);
     if(messageChat.idFrom == currentUserId){
       return Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
           messageChat.type == TypeMessage.text
-          ? Container(
-            constraints: BoxConstraints(maxWidth: 0.78*MediaQuery.of(context).size.width),
-            padding: const EdgeInsets.fromLTRB(14, 7, 12, 7),
-            decoration: BoxDecoration(
-                color: ColorConstants.greyColor2,
-                border: Border.all(color:Colors.grey, width: 1.4),
-                borderRadius: const BorderRadius.only(topLeft: Radius.circular(13.0),bottomLeft: Radius.circular(13.0), bottomRight: Radius.circular(13.0)),
-            ),
-            margin: EdgeInsets.only(bottom: isLastMessageRight(index) ? 15 : 4, right: 7),
-            child: Text(
-              messageChat.content,
-              style:GoogleFonts.roboto(
-                textStyle: const TextStyle(color: ColorConstants.primaryColor),
+          ? Column(
+            children: [
+                  Container(
+                    margin: const EdgeInsets.only(left: 5, top: 5, bottom: 5, right: 5),
+                    child: Text(
+                      DateFormat.Hm()
+                          .format(DateTime.fromMillisecondsSinceEpoch(int.parse(messageChat.timestamp))),
+                      style: const TextStyle(color: ColorConstants.greyColor, fontSize: 12, fontStyle: FontStyle.italic),
+                    ),
               ),
-            ),
+              Container(
+                constraints: BoxConstraints(maxWidth: 0.78*MediaQuery.of(context).size.width),
+                padding: const EdgeInsets.fromLTRB(14, 7, 12, 7),
+                decoration: BoxDecoration(
+                    color: ColorConstants.greyColor2,
+                    border: Border.all(color:Colors.black38, width: 1.1),
+                    borderRadius: const BorderRadius.only(topLeft: r,bottomLeft: r, bottomRight: r),
+                ),
+                margin: EdgeInsets.only(bottom: isLastMessageRight(index) ? 15 : 4, right: 7),
+                child: Text(
+                  messageChat.content,
+                  style:GoogleFonts.aBeeZee(
+                    textStyle: const TextStyle(
+                        color: ColorConstants.primaryColor,
+                      fontSize: 15
+                    ),
+                  ),
+                ),
+              ),
+            ],
           )
               : messageChat.type == TypeMessage.image
                 ? Container(
@@ -486,7 +502,7 @@ class ChatPageState extends State<ChatPage> {
       );
     }else{
       return Container(
-        margin: const EdgeInsets.only(bottom: 2),
+        margin: const EdgeInsets.only(bottom: 5),
         child: Column(
           //crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -527,25 +543,47 @@ class ChatPageState extends State<ChatPage> {
                 //   width: 35,
                 // ),
                 messageChat.type == TypeMessage.text
-                ? Row(
-                  mainAxisSize: MainAxisSize.min,
+                ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                        constraints: BoxConstraints(maxWidth: 0.78*MediaQuery.of(context).size.width),
-                        padding: const EdgeInsets.fromLTRB(12, 7, 14, 7),
-                        decoration: BoxDecoration(
-                          color: ColorConstants.primaryColor,
-                          border: Border.all(color:Colors.grey, width: 1.4),
-                          borderRadius: const BorderRadius.only(topLeft: Radius.circular(13.0),topRight: Radius.circular(13.0), bottomRight: Radius.circular(13.0)),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                            constraints: BoxConstraints(maxWidth: 0.78*MediaQuery.of(context).size.width),
+                            padding: const EdgeInsets.fromLTRB(12, 7, 14, 7),
+                            decoration: BoxDecoration(
+                              color: ColorConstants.primaryColor,
+                              border: Border.all(color:Colors.black38, width: 1.1),
+                              borderRadius: const BorderRadius.only(topLeft: r,topRight: r, bottomRight: r),
+                            ),
+                            margin: const EdgeInsets.only(left: 5),
+                            child: Text(
+                              messageChat.content,
+                              style: GoogleFonts.aBeeZee(
+                                textStyle: const TextStyle(
+                                    color: Colors.white,
+                                  fontSize: 15.0
+                                ),
+                              ),
+                            ),
                         ),
-                        margin: const EdgeInsets.only(left: 5),
-                        child: Text(
-                          messageChat.content,
-                          style: GoogleFonts.roboto(
-                            textStyle: const TextStyle(color: Colors.white),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(left: 5, top: 5, bottom: 5),
+                          child: Text(
+                            DateFormat.Hm()
+                                .format(DateTime.fromMillisecondsSinceEpoch(int.parse(messageChat.timestamp))),
+                            style: const TextStyle(color: ColorConstants.greyColor, fontSize: 12, fontStyle: FontStyle.italic),
                           ),
                         ),
-                    ),
+                      ],
+                    )
                   ],
                 ): messageChat.type == TypeMessage.image
                 ? Container(
@@ -612,15 +650,15 @@ class ChatPageState extends State<ChatPage> {
                 ),
               ],
             ),
-            isLastMessageLeft(index)
-            ? Container(
-              margin: const EdgeInsets.only(left: 50, top: 5, bottom: 5),
-              child: Text(
-                DateFormat("dd MM yyyy, hh:mm a")
-                    .format(DateTime.fromMillisecondsSinceEpoch(int.parse(messageChat.timestamp))),
-                style: const TextStyle(color: ColorConstants.greyColor, fontSize: 12, fontStyle: FontStyle.italic),
-              ),
-            ): const SizedBox.shrink()
+            // isLastMessageLeft(index)
+            // ? Container(
+            //   margin: const EdgeInsets.only(left: 50, top: 5, bottom: 5),
+            //   child: Text(
+            //     DateFormat("dd MM yyyy, hh:mm a")
+            //         .format(DateTime.fromMillisecondsSinceEpoch(int.parse(messageChat.timestamp))),
+            //     style: const TextStyle(color: ColorConstants.greyColor, fontSize: 12, fontStyle: FontStyle.italic),
+            //   ),
+            // ): const SizedBox.shrink()
           ],
         ),
       );
