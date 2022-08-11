@@ -327,7 +327,7 @@ class _HomePageState extends State<HomePage> {
 
 
 }
-Widget buildItem(BuildContext context, DocumentSnapshot? document, String? textSearch){
+Widget buildItem(BuildContext context, DocumentSnapshot? document){
   if (document == null) {
     return const SizedBox.shrink();
   }
@@ -335,9 +335,6 @@ Widget buildItem(BuildContext context, DocumentSnapshot? document, String? textS
   // if (userChat.id == currentUserId){
   //   return const SizedBox.shrink();
   // }
-  if (textSearch == null){
-
-  }
   return Container(
     margin: const EdgeInsets.only(bottom: 10, left: 5, right: 5),
     child: TextButton(
@@ -439,52 +436,128 @@ class BuildEntity{
 
   Widget over(String textSearch, int limit, String currentUserId){
     BuildEntityTruth buildEntityTruth = BuildEntityTruth(homeProvider: homeProvider, listScrollController: listScrollController);
-    BuildEntityNull buildEntityNull = BuildEntityNull(homeProvider: homeProvider, listScrollController: listScrollController);
-    if (textSearch.trim() != ""){
+    if (textSearch.trim().isNotEmpty){
       return buildEntityTruth.build(limit, textSearch);
     }
-    return buildEntityNull.build(currentUserId);
+    return BuildEntityNull(homeProvider: homeProvider, listScrollController: listScrollController, currentUserId: currentUserId,);
   }
 }
-class BuildEntityNull{
+class BuildEntityNull extends StatefulWidget {
   final HomeProvider homeProvider;
   final ScrollController listScrollController;
-  BuildEntityNull({Key? key, required this.homeProvider, required this.listScrollController});
+  final String currentUserId;
+  BuildEntityNull({
+    Key? key,
+    required this.homeProvider,
+    required this.listScrollController,
+    required this.currentUserId});
 
-  Widget build(String currentUserId) {
-    final List<String> friendsList =  homeProvider.getFriends(currentUserId);
-    print('currentUserId: $currentUserId');
-    print('friendsList: $friendsList');
-    print('friendList2: $friendsList');
-    return const Center(child: Text("print hua"));
-
-    // return Expanded(
-    //   child: StreamBuilder<QuerySnapshot>(
-    //     stream: homeProvider.getStreamFirestore(
-    //         FirestoreConstants.pathUserCollection, limit, _textSearch),
-    //     builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
-    //       if(snapshot.hasData){
-    //         if(snapshot.data!.docs.isNotEmpty){
-    //           return ListView.builder(
-    //             itemBuilder: (context, index) => buildItem(context, snapshot.data!.docs[index], _textSearch),
-    //             itemCount: snapshot.data!.docs.length,
-    //             controller: listScrollController,
-    //           );
-    //         }else{
-    //           return const Center(child: Text('No User Found!', style: TextStyle(color: Colors.grey)));
-    //         }
-    //       }else{
-    //         return const Center(
-    //           child: CircularProgressIndicator(
-    //             color: Colors.grey,
-    //           ),
-    //         );
-    //       }
-    //     },
-    //   ),
-    // );
+  @override
+  State<BuildEntityNull> createState() => _BuildEntityNullState();
+}
+class _BuildEntityNullState extends State<BuildEntityNull> {
+  @override
+  Widget build(BuildContext context) {
+    print('currentUserId: ${widget.currentUserId}');
+    return FutureBuilder<List<String>>(
+      future: widget.homeProvider.getFriends(widget.currentUserId),
+      builder: (BuildContext context, AsyncSnapshot<List<String>> snapShot){
+        if (snapShot.hasData){
+          print('snapShot.data: ${snapShot.data}');
+          if (snapShot.data!.isNotEmpty){
+            final List<String>? friendList = snapShot.data;
+            print('friendList: $friendList');
+            return Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: widget.homeProvider.getStreamFriends(
+                    FirestoreConstants.pathUserCollection, friendList),
+                builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+                  if(snapshot.hasData){
+                    if(snapshot.data!.docs.isNotEmpty){
+                      print('snapshot stream: ${snapshot.data!.docs}');
+                      return ListView.builder(
+                        itemBuilder: (context, index) => buildItem(context, snapshot.data!.docs[index]),
+                        itemCount: snapshot.data!.docs.length,
+                        controller: widget.listScrollController,
+                      );
+                    }else{
+                      return const Center(child: Text('No User Found!', style: TextStyle(color: Colors.grey)));
+                    }
+                  }else{
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.grey,
+                      ),
+                    );
+                  }
+                },
+              ),
+            );
+          }else{
+            return const Center(child: Text('No Friends Found!', style: TextStyle(color: Colors.grey)));
+          }
+        }
+        return const LoadingView();
+      },
+    );
   }
 }
+
+// class BuildEntityNull{
+//   final HomeProvider homeProvider;
+//   final ScrollController listScrollController;
+//
+//   BuildEntityNull({
+//     Key? key,
+//     required this.homeProvider,
+//     required this.listScrollController,
+//     required this.currentUserId});
+//
+//   Widget build(String currentUserId) {
+//     print('currentUserId: $currentUserId');
+//     return FutureBuilder<List<String>>(
+//       future: homeProvider.getFriends(currentUserId),
+//       builder: (BuildContext context, AsyncSnapshot<List<String>> snapShot){
+//         if (snapShot.hasData){
+//           print('snapShot.data: ${snapShot.data}');
+//           if (snapShot.data!.isNotEmpty){
+//             final List<String>? friendList = snapShot.data;
+//             print('friendList: $friendList');
+//             return Expanded(
+//               child: StreamBuilder<QuerySnapshot>(
+//                 stream: homeProvider.getStreamFriends(
+//                     FirestoreConstants.pathUserCollection, friendList),
+//                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+//                   if(snapshot.hasData){
+//                     if(snapshot.data!.docs.isNotEmpty){
+//                       print('snapshot stream: ${snapshot.data!.docs}');
+//                       return ListView.builder(
+//                         itemBuilder: (context, index) => buildItem(context, snapshot.data!.docs[index]),
+//                         itemCount: snapshot.data!.docs.length,
+//                         controller: listScrollController,
+//                       );
+//                     }else{
+//                       return const Center(child: Text('No User Found!', style: TextStyle(color: Colors.grey)));
+//                     }
+//                   }else{
+//                     return const Center(
+//                       child: CircularProgressIndicator(
+//                         color: Colors.grey,
+//                       ),
+//                     );
+//                   }
+//                 },
+//               ),
+//             );
+//           }else{
+//             return const Center(child: Text('No Friends Found!', style: TextStyle(color: Colors.grey)));
+//           }
+//         }
+//         return const LoadingView();
+//       },
+//     );
+//   }
+// }
 
 class BuildEntityTruth{
   final HomeProvider homeProvider;
@@ -500,7 +573,7 @@ class BuildEntityTruth{
           if(snapshot.hasData){
             if(snapshot.data!.docs.isNotEmpty){
               return ListView.builder(
-                itemBuilder: (context, index) => buildItem(context, snapshot.data!.docs[index], textSearch),
+                itemBuilder: (context, index) => buildItem(context, snapshot.data!.docs[index]),
                 itemCount: snapshot.data!.docs.length,
                 controller: listScrollController,
               );

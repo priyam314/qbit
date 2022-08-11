@@ -14,23 +14,30 @@ class HomeProvider {
         dataNeedUpdate);
   }
 
-  Stream<QuerySnapshot> getStreamFirestore(String collectionPath, int limit,
-      String? textSearch) {
+  Stream<QuerySnapshot> getStreamFirestore(String collectionPath, int limit, String? textSearch) {
     return firebaseFirestore.collection(collectionPath)
         .limit(limit).where(FirestoreConstants.nickname, isEqualTo: textSearch)
         .snapshots();
   }
 
-  List<String> getFriends(String id)  {
+  Stream<QuerySnapshot> getStreamFriends(String collectionPath, List<String>? friends) {
+    print('friends: $friends, type: ${friends.runtimeType}');
+    return firebaseFirestore
+        .collection(collectionPath)
+        .where(FirestoreConstants.id, whereIn: friends)
+        .snapshots();
+  }
+
+  Future<List<String>> getFriends(String id) async {
     List<String> friendsList = [];
     firebaseFirestore
         .collection(FirestoreConstants.pathUserCollection)
         .where("id", isEqualTo: id)
         .get()
         .then((QuerySnapshot querySnapshot) {
-          print('yo yo type: ${querySnapshot.docs[0].get(FirestoreConstants.friends) }');
+          //print('yo yo type: ${querySnapshot.docs[0].get(FirestoreConstants.friends) }');
           for(var iid in querySnapshot.docs[0].get(FirestoreConstants.friends)){
-            print (iid);
+            print ('friend: $iid');
             friendsList.add(iid);
           }
         })
