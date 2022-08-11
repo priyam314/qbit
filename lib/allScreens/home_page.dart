@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
+import 'package:qbit/allConstants/app_constants.dart';
 import 'package:qbit/allConstants/constants.dart';
 import 'package:qbit/allModels/user_chat.dart';
 import 'package:qbit/allWidgets/loading_view.dart';
@@ -16,6 +18,7 @@ import '../main.dart';
 import '../utilities/debouncer.dart';
 import '../utilities/utilities.dart';
 import 'chat_page.dart';
+import 'full_photo_state.dart';
 import 'login_page.dart';
 import 'settings_page.dart';
 
@@ -178,7 +181,7 @@ class _HomePageState extends State<HomePage> {
   Widget buildPopupMenu(){
     return PopupMenuButton<PopupChoices>(
         onSelected: onItemMenuPress,
-        icon: const Icon(Icons.more_vert, color: Colors.redAccent),
+        icon: const Icon(Icons.more_vert, color: ColorConstants.primaryColor),
         itemBuilder: (BuildContext context){
       return choices.map((PopupChoices choice){
         return PopupMenuItem<PopupChoices>(
@@ -212,7 +215,23 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: isWhite ? Colors.white : Colors.black,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: ColorConstants.primaryColor,
+        child: const Icon(
+          Icons.group_add,
+          color: Colors.white70,
+        ),
+      ),
       appBar: AppBar(
+        title: const Text(AppConstants.appTitle),
+        centerTitle: true,
+        titleTextStyle: const TextStyle(
+            color: ColorConstants.primaryColor,
+          fontWeight: FontWeight.bold,
+          fontStyle: FontStyle.italic,
+          fontSize: 20.0
+        ),
         backgroundColor: isWhite ? Colors.white:Colors.black,
         leading: IconButton(
           icon: Switch(
@@ -327,15 +346,16 @@ class _HomePageState extends State<HomePage> {
 
 
 }
-Widget buildItem(BuildContext context, DocumentSnapshot? document){
+Widget buildItem(BuildContext context, DocumentSnapshot? document, String currentUserId){
   if (document == null) {
     return const SizedBox.shrink();
   }
   UserChat userChat = UserChat.fromDocument(document);
   // if (userChat.id == currentUserId){
-  //   return const SizedBox.shrink();
+  //     return const Center(child: Text(
+  //           'No User Found!', style: TextStyle(color: Colors.grey)));
   // }
-  return Container(
+  return Card(
     margin: const EdgeInsets.only(bottom: 10, left: 5, right: 5),
     child: TextButton(
       onPressed: () {
@@ -362,33 +382,38 @@ Widget buildItem(BuildContext context, DocumentSnapshot? document){
             borderRadius: const BorderRadius.all(Radius.circular(25)),
             clipBehavior: Clip.hardEdge,
             child: userChat.photoUrl.isNotEmpty
-                ? Image.network(
-              userChat.photoUrl,
-              fit: BoxFit.cover,
-              width: 50,
-              height: 50,
-              loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress){
-                if (loadingProgress==null) return child;
-                return SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: CircularProgressIndicator(
-                    color: Colors.grey,
-                    value: loadingProgress.expectedTotalBytes != null &&
-                        loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded/loadingProgress.expectedTotalBytes!
-                        : null,
-                  ),
-                );
+                ? GestureDetector(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context) => FullPhotoPage(url: userChat.photoUrl)));
               },
-              errorBuilder: (context, object, stackTrace){
-                return const Icon(
-                  Icons.account_circle,
-                  size: 50,
-                  color: ColorConstants.greyColor,
-                );
-              },
-            )
+                  child: Image.network(
+                    userChat.photoUrl,
+                    fit: BoxFit.cover,
+                    width: 50,
+                    height: 50,
+                    loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress){
+                      if (loadingProgress==null) return child;
+                      return SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: CircularProgressIndicator(
+                          color: Colors.grey,
+                          value: loadingProgress.expectedTotalBytes != null &&
+                              loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded/loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, object, stackTrace){
+                      return const Icon(
+                        Icons.account_circle,
+                        size: 50,
+                        color: ColorConstants.greyColor,
+                      );
+                    },
+            ),
+                )
                 : const Icon(
               Icons.account_circle,
               size: 50,
@@ -406,7 +431,7 @@ Widget buildItem(BuildContext context, DocumentSnapshot? document){
                     child: Text(
                       userChat.nickName,
                       maxLines: 1,
-                      style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold, fontSize: 10),
+                      style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold, fontSize: 15),
                     ),
                   ),
                   Container(
@@ -436,8 +461,8 @@ class BuildEntity{
 
   Widget over(String textSearch, int limit, String currentUserId){
     BuildEntityTruth buildEntityTruth = BuildEntityTruth(homeProvider: homeProvider, listScrollController: listScrollController);
-    if (textSearch.trim().isNotEmpty){
-      return buildEntityTruth.build(limit, textSearch);
+    if (textSearch.trim().isNotEmpty) {
+      return buildEntityTruth.build(limit, textSearch, currentUserId);
     }
     return BuildEntityNull(homeProvider: homeProvider, listScrollController: listScrollController, currentUserId: currentUserId,);
   }
@@ -446,8 +471,7 @@ class BuildEntityNull extends StatefulWidget {
   final HomeProvider homeProvider;
   final ScrollController listScrollController;
   final String currentUserId;
-  BuildEntityNull({
-    Key? key,
+  const BuildEntityNull({
     required this.homeProvider,
     required this.listScrollController,
     required this.currentUserId});
@@ -459,46 +483,33 @@ class _BuildEntityNullState extends State<BuildEntityNull> {
   @override
   Widget build(BuildContext context) {
     print('currentUserId: ${widget.currentUserId}');
-    return FutureBuilder<List<String>>(
-      future: widget.homeProvider.getFriends(widget.currentUserId),
-      builder: (BuildContext context, AsyncSnapshot<List<String>> snapShot){
-        if (snapShot.hasData){
-          print('snapShot.data: ${snapShot.data}');
-          if (snapShot.data!.isNotEmpty){
-            final List<String>? friendList = snapShot.data;
-            print('friendList: $friendList');
-            return Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: widget.homeProvider.getStreamFriends(
-                    FirestoreConstants.pathUserCollection, friendList),
-                builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
-                  if(snapshot.hasData){
-                    if(snapshot.data!.docs.isNotEmpty){
-                      print('snapshot stream: ${snapshot.data!.docs}');
-                      return ListView.builder(
-                        itemBuilder: (context, index) => buildItem(context, snapshot.data!.docs[index]),
-                        itemCount: snapshot.data!.docs.length,
-                        controller: widget.listScrollController,
-                      );
-                    }else{
-                      return const Center(child: Text('No User Found!', style: TextStyle(color: Colors.grey)));
-                    }
-                  }else{
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: Colors.grey,
-                      ),
-                    );
-                  }
-                },
+    return Expanded(
+      child: FutureBuilder<QuerySnapshot<dynamic>>(
+        future: widget.homeProvider.getStreamFriends(
+            FirestoreConstants.pathUserCollection, widget.currentUserId),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasData) {
+            if (snapshot.data!.docs.isNotEmpty) {
+              print('snapshot stream: ${snapshot.data!.docs}');
+              return ListView.builder(
+                itemBuilder: (context, index) =>
+                    buildItem(context, snapshot.data!.docs[index], widget.currentUserId),
+                itemCount: snapshot.data!.docs.length,
+                controller: widget.listScrollController,
+              );
+            } else {
+              return const Center(child: Text(
+                  'No User Found!', style: TextStyle(color: Colors.grey)));
+            }
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Colors.grey,
               ),
             );
-          }else{
-            return const Center(child: Text('No Friends Found!', style: TextStyle(color: Colors.grey)));
           }
-        }
-        return const LoadingView();
-      },
+        },
+      ),
     );
   }
 }
@@ -564,7 +575,7 @@ class BuildEntityTruth{
   final ScrollController listScrollController;
   BuildEntityTruth({Key? key, required this.homeProvider, required this.listScrollController});
 
-  Widget build(int limit, String textSearch){
+  Widget build(int limit, String textSearch, String currentUserId){
     return Expanded(
       child: StreamBuilder<QuerySnapshot>(
         stream: homeProvider.getStreamFirestore(
@@ -573,7 +584,7 @@ class BuildEntityTruth{
           if(snapshot.hasData){
             if(snapshot.data!.docs.isNotEmpty){
               return ListView.builder(
-                itemBuilder: (context, index) => buildItem(context, snapshot.data!.docs[index]),
+                itemBuilder: (context, index) => buildItem(context, snapshot.data!.docs[index], currentUserId),
                 itemCount: snapshot.data!.docs.length,
                 controller: listScrollController,
               );

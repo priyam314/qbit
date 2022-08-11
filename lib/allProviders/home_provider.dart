@@ -16,21 +16,25 @@ class HomeProvider {
 
   Stream<QuerySnapshot> getStreamFirestore(String collectionPath, int limit, String? textSearch) {
     return firebaseFirestore.collection(collectionPath)
-        .limit(limit).where(FirestoreConstants.nickname, isEqualTo: textSearch)
+        .limit(limit)
+        .where(FirestoreConstants.nickname, isGreaterThanOrEqualTo: textSearch)
+        .where(FirestoreConstants.nickname, isLessThan: '${textSearch}z')
         .snapshots();
   }
 
-  Stream<QuerySnapshot> getStreamFriends(String collectionPath, List<String>? friends) {
-    print('friends: $friends, type: ${friends.runtimeType}');
+  Future<QuerySnapshot> getStreamFriends(String collectionPath, String id)async {
+    // print('friends: $friends, type: ${friends.runtimeType}');
+    final List<String> friends = await getFriends(id);
+    print('friends: $friends');
     return firebaseFirestore
         .collection(collectionPath)
         .where(FirestoreConstants.id, whereIn: friends)
-        .snapshots();
+        .get();
   }
 
   Future<List<String>> getFriends(String id) async {
     List<String> friendsList = [];
-    firebaseFirestore
+    await firebaseFirestore
         .collection(FirestoreConstants.pathUserCollection)
         .where("id", isEqualTo: id)
         .get()
@@ -51,6 +55,14 @@ class HomeProvider {
         .doc(id)
         .update({FirestoreConstants.friends: FieldValue.arrayUnion(<String>[friendId])})
         .then((_)=>print("done adding friend"));
+  }
+  Future<void> addToFriend(String id, String friendId) async {
+    print("adding to friend");
+    return await firebaseFirestore
+        .collection(FirestoreConstants.pathUserCollection)
+        .doc(friendId)
+        .update({FirestoreConstants.friends: FieldValue.arrayUnion(<String>[id])})
+        .then((_)=>print("done adding to friend"));
   }
 }
 

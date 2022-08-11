@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +22,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../allModels/message_chat.dart';
 import '../allProviders/chat_provider.dart';
+import '../allWidgets/allButton.dart';
 import '../main.dart';
 
 class ChatPage extends StatefulWidget {
@@ -155,6 +157,7 @@ class ChatPageState extends State<ChatPage> {
       textEditingController.clear();
       chatProvider.sendMessage(content, type, groupChatId, currentUserId, peerId!);
       homeProvider.addFriends(currentUserId, peerId!);
+      homeProvider.addToFriend(currentUserId, peerId!);
       listScrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
     }else{
       Fluttertoast.showToast(msg: 'Nothing To Send', backgroundColor: ColorConstants.greyColor);
@@ -204,9 +207,42 @@ class ChatPageState extends State<ChatPage> {
           iconTheme: const IconThemeData(
             color: ColorConstants.primaryColor,
           ),
-        title: Text(
-          peerNickname!,
-          style: const TextStyle(color: ColorConstants.primaryColor),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.all(Radius.circular(20)),
+              child: Image.network(
+                peerAvatar!,
+                loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress ){
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: ColorConstants.themeColor,
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  );
+                },
+                errorBuilder: (context, object, stackStrace){
+                  return const Icon(
+                    Icons.account_circle,
+                    size: 35,
+                    color: ColorConstants.greyColor,
+                  );
+                },
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              peerNickname!,
+              style: const TextStyle(color: ColorConstants.primaryColor),
+            ),
+          ],
         ),
         centerTitle: true,
         actions: <Widget>[
@@ -256,87 +292,25 @@ class ChatPageState extends State<ChatPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                TextButton(
-                  onPressed: () => onSendMessage('mimi1', TypeMessage.sticker),
-                  child: Image.asset(
-                    'images/mimi1.gif',
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => onSendMessage('mimi1', TypeMessage.sticker),
-                  child: Image.asset(
-                      'images/mimi1.gif',
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => onSendMessage('mimi1', TypeMessage.sticker),
-                  child: Image.asset(
-                      'images/mimi1.gif',
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => onSendMessage('mimi1', TypeMessage.sticker),
-                  child: Image.asset(
-                      'images/mimi1.gif',
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => onSendMessage('mimi1', TypeMessage.sticker),
-                  child: Image.asset(
-                      'images/mimi1.gif',
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => onSendMessage('mimi1', TypeMessage.sticker),
-                  child: Image.asset(
-                      'images/mimi1.gif',
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => onSendMessage('mimi1', TypeMessage.sticker),
-                  child: Image.asset(
-                      'images/mimi1.gif',
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => onSendMessage('mimi1', TypeMessage.sticker),
-                  child: Image.asset(
-                      'images/mimi1.gif',
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => onSendMessage('mimi1', TypeMessage.sticker),
-                  child: Image.asset(
-                      'images/mimi1.gif',
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover
-                  ),
-                ),
+                GifButton(name: "mimi1", onPress: onSendMessage),
+                GifButton(name: "mimi2", onPress: onSendMessage),
+                GifButton(name: "mimi3", onPress: onSendMessage)
+              ]
+            ),
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                GifButton(name: "mimi4", onPress: onSendMessage),
+                GifButton(name: "mimi5", onPress: onSendMessage),
+                GifButton(name: "mimi6", onPress: onSendMessage)
+              ]
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                GifButton(name: "mimi7", onPress: onSendMessage),
+                GifButton(name: "mimi8", onPress: onSendMessage),
+                GifButton(name: "mimi9", onPress: onSendMessage)
               ],
             ),
           ],
@@ -427,16 +401,19 @@ class ChatPageState extends State<ChatPage> {
         children: <Widget>[
           messageChat.type == TypeMessage.text
           ? Container(
-            padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-            width: 200,
+            constraints: BoxConstraints(maxWidth: 0.78*MediaQuery.of(context).size.width),
+            padding: const EdgeInsets.fromLTRB(14, 7, 12, 7),
             decoration: BoxDecoration(
                 color: ColorConstants.greyColor2,
-                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color:Colors.grey, width: 1.4),
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(13.0),bottomLeft: Radius.circular(13.0), bottomRight: Radius.circular(13.0)),
             ),
-            margin: EdgeInsets.only(bottom: isLastMessageRight(index) ? 20 : 10, right: 10),
+            margin: EdgeInsets.only(bottom: isLastMessageRight(index) ? 15 : 4, right: 7),
             child: Text(
               messageChat.content,
-              style: const TextStyle(color: ColorConstants.primaryColor),
+              style:GoogleFonts.roboto(
+                textStyle: const TextStyle(color: ColorConstants.primaryColor),
+              ),
             ),
           )
               : messageChat.type == TypeMessage.image
@@ -509,59 +486,67 @@ class ChatPageState extends State<ChatPage> {
       );
     }else{
       return Container(
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.only(bottom: 2),
         child: Column(
           //crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
-                isLastMessageLeft(index)
-                ? Material(
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(10),
-                  ),
-                  clipBehavior: Clip.hardEdge,
-                  child: Image.network(
-                    peerAvatar!,
-                    loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress ){
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          color: ColorConstants.themeColor,
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, object, stackStrace){
-                      return const Icon(
-                        Icons.account_circle,
-                        size: 35,
-                        color: ColorConstants.greyColor,
-                      );
-                    },
-                    width: 35,
-                    height: 35,
-                    fit: BoxFit.cover,
-                  ),
-                ) : Container(
-                  width: 35,
-                ),
+                // isLastMessageLeft(index)
+                // ? Material(
+                //   borderRadius: const BorderRadius.all(
+                //     Radius.circular(10),
+                //   ),
+                //   clipBehavior: Clip.hardEdge,
+                //   child: Image.network(
+                //     peerAvatar!,
+                //     loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress ){
+                //       if (loadingProgress == null) return child;
+                //       return Center(
+                //         child: CircularProgressIndicator(
+                //           color: ColorConstants.themeColor,
+                //           value: loadingProgress.expectedTotalBytes != null
+                //               ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                //               : null,
+                //         ),
+                //       );
+                //     },
+                //     errorBuilder: (context, object, stackStrace){
+                //       return const Icon(
+                //         Icons.account_circle,
+                //         size: 35,
+                //         color: ColorConstants.greyColor,
+                //       );
+                //     },
+                //     width: 35,
+                //     height: 35,
+                //     fit: BoxFit.cover,
+                //   ),
+                // ) : Container(
+                //   width: 35,
+                // ),
                 messageChat.type == TypeMessage.text
-                ? Container(
-                  padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-                  width: 200,
-                  decoration: BoxDecoration(
-                    color: ColorConstants.primaryColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  margin: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    messageChat.content,
-                    style: const TextStyle(color: Colors.white),
-                  ),
+                ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                        constraints: BoxConstraints(maxWidth: 0.78*MediaQuery.of(context).size.width),
+                        padding: const EdgeInsets.fromLTRB(12, 7, 14, 7),
+                        decoration: BoxDecoration(
+                          color: ColorConstants.primaryColor,
+                          border: Border.all(color:Colors.grey, width: 1.4),
+                          borderRadius: const BorderRadius.only(topLeft: Radius.circular(13.0),topRight: Radius.circular(13.0), bottomRight: Radius.circular(13.0)),
+                        ),
+                        margin: const EdgeInsets.only(left: 5),
+                        child: Text(
+                          messageChat.content,
+                          style: GoogleFonts.roboto(
+                            textStyle: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                    ),
+                  ],
                 ): messageChat.type == TypeMessage.image
                 ? Container(
                   margin: EdgeInsets.only(bottom: isLastMessageRight(index) ? 20: 10, right: 10),
@@ -648,39 +633,40 @@ class ChatPageState extends State<ChatPage> {
   // the StreamBuilder takes in the latest ‘data event’ (the latest encountered
   // of a data item from the stream) to determine the next widget to be built.
   Widget buildListMessage(){
-    return Flexible(
-      child: groupChatId.isNotEmpty
-          ? StreamBuilder<QuerySnapshot>(
-              stream: chatProvider.getChatStream(groupChatId, limit),
-              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
-                if (snapshot.hasData){
-                  listMessage.addAll(snapshot.data!.docs);
-                  // ListView is a very important widget in a flutter. It is used
-                  // to create the list of children But when we want to create a
-                  // list recursively without writing code again and again then
-                  // ListView.builder is used instead of ListView.  ListView.builder
-                  // creates a scrollable, linear array of widgets.
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(10),
-                    itemBuilder: (context, index) => buildItem(index, snapshot.data?.docs[index]),
-                    itemCount: snapshot.data?.docs.length,
-                    reverse: true,
-                    controller: listScrollController
-                  );
-                }else{
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: ColorConstants.themeColor,
-                    ),
-                  );
-                }
-              },
-      )
-          : const Center(
-              child: CircularProgressIndicator(
-                color: ColorConstants.themeColor,
-        ),
-      ),
-    );
+    return
+        Flexible(
+          child: groupChatId.isNotEmpty
+              ? StreamBuilder<QuerySnapshot>(
+                  stream: chatProvider.getChatStream(groupChatId, limit),
+                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+                    if (snapshot.hasData){
+                      listMessage.addAll(snapshot.data!.docs);
+                      // ListView is a very important widget in a flutter. It is used
+                      // to create the list of children But when we want to create a
+                      // list recursively without writing code again and again then
+                      // ListView.builder is used instead of ListView.  ListView.builder
+                      // creates a scrollable, linear array of widgets.
+                      return ListView.builder(
+                        padding: const EdgeInsets.all(5),
+                        itemBuilder: (context, index) => buildItem(index, snapshot.data?.docs[index]),
+                        itemCount: snapshot.data?.docs.length,
+                        reverse: true,
+                        controller: listScrollController
+                      );
+                    }else{
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: ColorConstants.themeColor,
+                        ),
+                      );
+                    }
+                  },
+          )
+              : const Center(
+                  child: CircularProgressIndicator(
+                    color: ColorConstants.themeColor,
+            ),
+          ),
+        );
   }
 }

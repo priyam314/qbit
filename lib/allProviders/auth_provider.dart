@@ -96,11 +96,11 @@ class AuthProvider extends ChangeNotifier{
           .doc(firebaseUser.uid)
           .set({
                 FirestoreConstants.nickname: firebaseUser.displayName,
-                FirestoreConstants.photoUrl: firebaseUser.displayName,
+                FirestoreConstants.photoUrl: firebaseUser.photoURL,
                 FirestoreConstants.id: firebaseUser.uid,
                 'createdAt': DateTime.now().millisecondsSinceEpoch.toString(),
                 FirestoreConstants.chattingWith: null,
-                FirestoreConstants.friends: <String>[],
+                FirestoreConstants.friends: <String>[firebaseUser.uid],
       });
       User? currentUser = firebaseUser;
       // setting the values of credentials in persistent storage also
