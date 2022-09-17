@@ -4,7 +4,7 @@ A new Flutter project.
 
 ## Promo Video
 <figure class="video_container">
-  <video controls="true" allowfullscreen="true" poster="/android/app/src/main/res/drawable/app_icon.png">
+  <video controls="true" allowfullscreen="true" poster=android/app/src/main/res/drawable/app_icon.png">
     <source src="promo.mp4" type="video/mp4">
     <source src="promo.ogg" type="video/ogg">
     <source src="promo.webm" type="video/webm">
