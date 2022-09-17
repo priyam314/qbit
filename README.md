@@ -3,13 +3,11 @@
 A new Flutter project.
 
 ## Promo Video
-<figure class="video_container">
-  <video controls="true" allowfullscreen="true" poster=app_icon.png">
-    <source src="promo.mp4" type="video/mp4">
-    <source src="promo.ogg" type="video/ogg">
-    <source src="promo.webm" type="video/webm">
-  </video>
-</figure>
+
+
+https://user-images.githubusercontent.com/41532536/190866168-4f07b2f6-7685-4bbd-8db7-d5fd6d48aa6b.mp4
+
+
 
 ## Getting Started
 
