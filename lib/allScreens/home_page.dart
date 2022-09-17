@@ -3,7 +3,10 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:qbit/allConstants/app_constants.dart';
@@ -30,6 +33,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   final GoogleSignIn googleSignIn = GoogleSignIn();
   final ScrollController listScrollController = ScrollController();
 
@@ -175,6 +180,8 @@ class _HomePageState extends State<HomePage> {
           (Route<dynamic> route) => false,
       );
     }
+    registerNotification();
+    configureLocalNotification();
     listScrollController.addListener(scrollListener);
   }
 
@@ -210,6 +217,53 @@ class _HomePageState extends State<HomePage> {
   void dispose(){
     super.dispose();
     btnClearController.close();
+  }
+  void registerNotification(){
+    firebaseMessaging.requestPermission();
+    FirebaseMessaging.onMessage.listen((RemoteMessage message){
+      if(message.notification!=null){
+        showNotification(message.notification!);
+      }
+      return;
+    });
+    firebaseMessaging.getToken().then((token){
+      if (token!=null){
+        homeProvider.updateDataFirestore(FirestoreConstants.pathUserCollection, currentUserId, {'pushToken':token});
+      }
+    }).catchError((error){
+      Fluttertoast.showToast(msg:error.message.toString());
+    });
+  }
+  void configureLocalNotification(){
+    AndroidInitializationSettings initializationAndroidSettings = const AndroidInitializationSettings("app_icon");
+    IOSInitializationSettings initializationIOSSettings = const IOSInitializationSettings();
+    InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationAndroidSettings,
+      iOS: initializationIOSSettings,
+    );
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+  void showNotification(RemoteNotification remoteNotification) async{
+    AndroidNotificationDetails androidNotificationDetails = const AndroidNotificationDetails(
+        "com.example.qbit",
+        "qBit",
+        playSound: true,
+        enableVibration: true,
+        importance: Importance.max,
+        priority: Priority.high
+    );
+    IOSNotificationDetails iosNotificationDetails = IOSNotificationDetails();
+    NotificationDetails notificationDetails = NotificationDetails(
+      android: androidNotificationDetails,
+      iOS: iosNotificationDetails,
+    );
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      remoteNotification.title,
+      remoteNotification.body,
+      notificationDetails,
+      payload: null,
+    );
   }
   @override
   Widget build(BuildContext context) {
